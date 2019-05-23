@@ -1,0 +1,51 @@
+
+
+with open(r"spamLabelled.dat") as spamLabelled:
+    spamLabelled = spamLabelled.readlines()
+
+    spam = []
+    ham = []
+    att_true_spam = []
+    att_false_spam = []
+    att_true_ham = []
+    att_false_ham = []
+
+
+    for line in spamLabelled:
+        values = line.split()
+        if values[0] == "1":
+            spam.append(values[1:])
+        else:
+            ham.append(values[1:])
+
+spam_len = len(spam)
+ham_len = len(ham)
+
+data_size = spam_len + ham_len
+spam_prob = (spam_len/data_size)*100
+ham_prob = (100 - spam_prob)
+
+for att in range(0, 12):
+    count = 0
+    for instance in spam:
+        if instance[att] == "1":
+            count += 1
+    p_att_i_true_spam = (count/spam_len)*100
+    p_att_i_false_spam = 100 - p_att_i_true_spam
+    att_true_spam.append(p_att_i_true_spam)
+    att_false_spam.append(p_att_i_false_spam)
+
+    count = 0
+    for instance in ham:
+        if instance[att] == "1":
+            count += 1
+    p_att_i_true_ham = (count/ham_len)*100
+    p_att_i_false_ham = 100 - p_att_i_true_ham
+    att_true_ham.append(p_att_i_true_ham)
+    att_false_ham.append(p_att_i_false_ham)
+
+print(att_true_spam)
+print(att_false_spam)
+
+
+
