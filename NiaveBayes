@@ -4,10 +4,11 @@ with open(r"spamLabelled.dat") as spamLabelled:
 
     spam = []
     ham = []
-    att_true_spam = []
-    att_false_spam = []
+    att_true_spam = []      # P(Fi = 1 | spam)
+    att_false_spam = []     # P(Fi = 0 | spam)
     att_true_ham = []
     att_false_ham = []
+    sample_output = []
 
     for line in spamLabelled:
         values = line.split()
@@ -42,50 +43,51 @@ for att in range(0, 12):
     att_true_ham.append(p_att_i_true_ham)
     att_false_ham.append(p_att_i_false_ham)
 
-# print("Spam true: " + str(att_true_spam))
-# print("Spam false: " + str(att_false_spam))
-# print("Ham true: " + str(att_true_ham))
-# print("Ham false: " + str(att_false_ham))
+print("Spam true: " + str(att_true_spam))
+print("Spam false: " + str(att_false_spam))
+print("Ham true: " + str(att_true_ham))
+print("Ham false: " + str(att_false_ham))
 
 with open(r"spamUnlabelled.dat") as spamUnlabelled:
     spamUnlabelled = spamUnlabelled.readlines()
 
-un_spam = []
-un_ham = []
 email = []
-p_un_att_spam = []
-p_un_att_ham = []
+p_att_spam = []
+p_att_ham = []
 
 for line in spamUnlabelled:
-    multiPi_att = 1.0  # P(Xi * Xi...Xn)
-    multiPi_att_spam = 1.0  # P(Xi * Xi...Xn | spam)
-    multiPi_att_ham = 1.0  # P(Xi * Xi...Xn | ham)
+    multiPi_att = 1.0  # P(Fi * Fi...Fn)
+    multiPi_att_spam = 1.0  # P(Fi * Fi...Fn | spam)
+    multiPi_att_ham = 1.0  # P(Fi * Fi...Fn | ham)
     email = line.split()
-    p_un_att_spam.clear()
-    p_un_att_ham.clear()
+    p_att_spam.clear()
+    p_att_ham.clear()
     for i in range(0, 12):
         if email[i] == "1":
-            p_un_att_spam.append(att_true_spam[i])
-            p_un_att_ham.append(att_true_ham[i])
+            p_att_spam.append(att_true_spam[i])
+            p_att_ham.append(att_true_ham[i])
         else:
-            p_un_att_spam.append(att_false_spam[i])
-            p_un_att_ham.append(att_false_ham[i])
+            p_att_spam.append(att_false_spam[i])
+            p_att_ham.append(att_false_ham[i])
 
-        multiPi_att_spam *= p_un_att_spam[i]
-        multiPi_att_ham *= p_un_att_ham[i]
-    # print("top Spam: " + str(multiPi_att_spam))
-    # print("top Ham: " + str(multiPi_att_ham))
+        multiPi_att_spam *= p_att_spam[i]
+        multiPi_att_ham *= p_att_ham[i]
 
     multiPi_att_spam *= spam_prob
     multiPi_att_ham *= ham_prob
     multiPi_att = multiPi_att_spam + multiPi_att_ham
-    # print(multiPi_att)
 
-    prob_spam_givenX = (multiPi_att_spam / multiPi_att) *100
-    prob_ham_givenX = multiPi_att_ham / multiPi_att *100
-    if prob_spam_givenX > prob_ham_givenX:
-        print("Spam: " + str(prob_spam_givenX))
+    prob_spam_givenF = (multiPi_att_spam / multiPi_att) * 100
+    prob_ham_givenF = (multiPi_att_ham / multiPi_att) * 100
+
+    file = open("sampleoutput.txt", "w+")
+
+    if prob_spam_givenF > prob_ham_givenF:
+        output = "Spam: " + str(prob_spam_givenF)
     else:
-        print("Ham: " + str(prob_ham_givenX))
+        output = "Ham: " + str(prob_ham_givenF)
 
-
+    sample_output.append(output)
+for i in range(int(len(sample_output))):
+    file.write(str(sample_output[i]) + "\n")
+file.close()
