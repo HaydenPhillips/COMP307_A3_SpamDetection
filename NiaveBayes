@@ -1,5 +1,4 @@
 
-
 with open(r"spamLabelled.dat") as spamLabelled:
     spamLabelled = spamLabelled.readlines()
 
@@ -9,7 +8,6 @@ with open(r"spamLabelled.dat") as spamLabelled:
     att_false_spam = []
     att_true_ham = []
     att_false_ham = []
-
 
     for line in spamLabelled:
         values = line.split()
@@ -22,16 +20,16 @@ spam_len = len(spam)
 ham_len = len(ham)
 
 data_size = spam_len + ham_len
-spam_prob = (spam_len/data_size)*100
-ham_prob = (100 - spam_prob)
+spam_prob = (spam_len/data_size)
+ham_prob = (1 - spam_prob)
 
 for att in range(0, 12):
     count = 0
     for instance in spam:
         if instance[att] == "1":
             count += 1
-    p_att_i_true_spam = (count/spam_len)*100
-    p_att_i_false_spam = 100 - p_att_i_true_spam
+    p_att_i_true_spam = (count/spam_len)
+    p_att_i_false_spam = 1 - p_att_i_true_spam
     att_true_spam.append(p_att_i_true_spam)
     att_false_spam.append(p_att_i_false_spam)
 
@@ -39,13 +37,55 @@ for att in range(0, 12):
     for instance in ham:
         if instance[att] == "1":
             count += 1
-    p_att_i_true_ham = (count/ham_len)*100
-    p_att_i_false_ham = 100 - p_att_i_true_ham
+    p_att_i_true_ham = (count/ham_len)
+    p_att_i_false_ham = 1 - p_att_i_true_ham
     att_true_ham.append(p_att_i_true_ham)
     att_false_ham.append(p_att_i_false_ham)
 
-print(att_true_spam)
-print(att_false_spam)
+# print("Spam true: " + str(att_true_spam))
+# print("Spam false: " + str(att_false_spam))
+# print("Ham true: " + str(att_true_ham))
+# print("Ham false: " + str(att_false_ham))
 
+with open(r"spamUnlabelled.dat") as spamUnlabelled:
+    spamUnlabelled = spamUnlabelled.readlines()
+
+un_spam = []
+un_ham = []
+email = []
+p_un_att_spam = []
+p_un_att_ham = []
+
+for line in spamUnlabelled:
+    multiPi_att = 1.0  # P(Xi * Xi...Xn)
+    multiPi_att_spam = 1.0  # P(Xi * Xi...Xn | spam)
+    multiPi_att_ham = 1.0  # P(Xi * Xi...Xn | ham)
+    email = line.split()
+    p_un_att_spam.clear()
+    p_un_att_ham.clear()
+    for i in range(0, 12):
+        if email[i] == "1":
+            p_un_att_spam.append(att_true_spam[i])
+            p_un_att_ham.append(att_true_ham[i])
+        else:
+            p_un_att_spam.append(att_false_spam[i])
+            p_un_att_ham.append(att_false_ham[i])
+
+        multiPi_att_spam *= p_un_att_spam[i]
+        multiPi_att_ham *= p_un_att_ham[i]
+    # print("top Spam: " + str(multiPi_att_spam))
+    # print("top Ham: " + str(multiPi_att_ham))
+
+    multiPi_att_spam *= spam_prob
+    multiPi_att_ham *= ham_prob
+    multiPi_att = multiPi_att_spam + multiPi_att_ham
+    # print(multiPi_att)
+
+    prob_spam_givenX = (multiPi_att_spam / multiPi_att) *100
+    prob_ham_givenX = multiPi_att_ham / multiPi_att *100
+    if prob_spam_givenX > prob_ham_givenX:
+        print("Spam: " + str(prob_spam_givenX))
+    else:
+        print("Ham: " + str(prob_ham_givenX))
 
 
