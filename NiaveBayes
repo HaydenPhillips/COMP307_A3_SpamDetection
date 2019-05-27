@@ -1,21 +1,20 @@
-
-with open(r"spamLabelled.dat") as spamLabelled:
+import sys
+with open(sys.argv[1]) as spamLabelled:
     spamLabelled = spamLabelled.readlines()
-
     spam = []
     ham = []
     att_true_spam = []      # P(Fi = 1 | spam)
     att_false_spam = []     # P(Fi = 0 | spam)
-    att_true_ham = []
-    att_false_ham = []
-    sample_output = []
+    att_true_ham = []       # P(Fi = 0 | ham)
+    att_false_ham = []      # P(Fi = 0 | ham)
+    sample_output = []      # an array for printing to .txt file
 
-    for line in spamLabelled:
-        values = line.split()
-        if values[0] == "1":
-            spam.append(values[1:])
+    for instance in spamLabelled:
+        values = instance.split()
+        if values[len(values)-1] == "1":
+            spam.append(values[:12])
         else:
-            ham.append(values[1:])
+            ham.append(values[:12])
 
 spam_len = len(spam)
 ham_len = len(ham)
@@ -29,10 +28,10 @@ for att in range(0, 12):
     for instance in spam:
         if instance[att] == "1":
             count += 1
-    p_att_i_true_spam = (count/spam_len)
-    p_att_i_false_spam = 1 - p_att_i_true_spam
-    att_true_spam.append(p_att_i_true_spam)
-    att_false_spam.append(p_att_i_false_spam)
+    p_att_i_true_spam = (count/spam_len)        # P(Fi = 1 | spam)
+    p_att_i_false_spam = 1 - p_att_i_true_spam  # P(Fi = 0 | spam)
+    att_true_spam.append(p_att_i_true_spam)     # an array holding present attribute probability (F = 1)
+    att_false_spam.append(p_att_i_false_spam)   # an array holding absent attribute probability (F = 0)
 
     count = 0
     for instance in ham:
@@ -43,27 +42,33 @@ for att in range(0, 12):
     att_true_ham.append(p_att_i_true_ham)
     att_false_ham.append(p_att_i_false_ham)
 
-print("Spam true: " + str(att_true_spam))
-print("Spam false: " + str(att_false_spam))
-print("Ham true: " + str(att_true_ham))
-print("Ham false: " + str(att_false_ham))
+# for i in att_true_spam:
+#     print('%.3f' %(i))
+# print("Xi = 1, spam")
+# for i in att_false_spam:
+#     print('%.3f' %(i))
+# print("Xi = 0, spam")
+# for i in att_true_ham:
+#     print('%.3f' %(i))
+# print("Xi = 1, ham")
+# for i in att_false_ham:
+#     print('%.3f' %(i))
+# print("Xi = 0, ham")
 
-with open(r"spamUnlabelled.dat") as spamUnlabelled:
+with open(sys.argv[2]) as spamUnlabelled:
     spamUnlabelled = spamUnlabelled.readlines()
 
 email = []
-p_att_spam = []
-p_att_ham = []
 
-for line in spamUnlabelled:
-    multiPi_att = 1.0  # P(Fi * Fi...Fn)
-    multiPi_att_spam = 1.0  # P(Fi * Fi...Fn | spam)
-    multiPi_att_ham = 1.0  # P(Fi * Fi...Fn | ham)
-    email = line.split()
-    p_att_spam.clear()
-    p_att_ham.clear()
-    for i in range(0, 12):
-        if email[i] == "1":
+for instance in spamUnlabelled:
+    multiPi_att = 1         # P(Fi * Fi...Fn)
+    multiPi_att_spam = 1    # P(Fi * Fi...Fn | spam)
+    multiPi_att_ham = 1     # P(Fi * Fi...Fn | ham)
+    email = instance.split()    # Collecting the attributes that exist in an email
+    p_att_spam = []         # P(Fi,...Fn | spam)
+    p_att_ham = []
+    for i in range(0, len(email)):
+        if email[i] == "1":                         # if email contains attribute
             p_att_spam.append(att_true_spam[i])
             p_att_ham.append(att_true_ham[i])
         else:
@@ -83,9 +88,9 @@ for line in spamUnlabelled:
     file = open("sampleoutput.txt", "w+")
 
     if prob_spam_givenF > prob_ham_givenF:
-        output = "Spam: " + str(prob_spam_givenF)
+        output = "Spam:\t" + str(prob_spam_givenF)
     else:
-        output = "Ham: " + str(prob_ham_givenF)
+        output = "Ham:\t" + str(prob_ham_givenF)
 
     sample_output.append(output)
 for i in range(int(len(sample_output))):
